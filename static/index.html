@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>SCANOVA Sandbox</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: white;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 42px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+        }
+
+        .url-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            background: #0f172a;
+            color: white;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        #status {
+            margin-top: 20px;
+            color: #94a3b8;
+        }
+
+        iframe {
+            width: 100%;
+            height: 650px;
+            border: none;
+            border-radius: 10px;
+            background: black;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .session {
+            margin-top: 20px;
+            color: #22c55e;
+        }
+
+        .results {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .result-box {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #334155;
+        }
+
+        .result-label {
+            color: #94a3b8;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .result-value {
+            font-size: 16px;
+            word-break: break-all;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <h1>SCANOVA</h1>
+
+    <div class="subtitle">
+        Secure URL Analysis Sandbox
+    </div>
+
+
+    <!-- URL INPUT -->
+
+    <div class="card">
+
+        <div class="url-row">
+
+            <input
+                id="urlInput"
+                type="url"
+                placeholder="https://example.com"
+            >
+
+            <button onclick="startSandbox()">
+                Analyze
+            </button>
+
+        </div>
+
+        <div id="status"></div>
+
+    </div>
+
+
+    <!-- BROWSER -->
+
+    <div
+        id="browserCard"
+        class="card hidden"
+    >
+
+        <h2>Sandbox Browser</h2>
+
+        <iframe
+            id="browserFrame"
+            src="">
+        </iframe>
+
+        <div
+            id="sessionInfo"
+            class="session">
+        </div>
+
+    </div>
+
+
+    <!-- ANALYSIS RESULTS -->
+
+    <div
+        id="resultsCard"
+        class="card hidden"
+    >
+
+        <h2>Analysis Results</h2>
+
+        <div class="results">
+
+            <div class="result-box">
+
+                <div class="result-label">
+                    URL
+                </div>
+
+                <div
+                    id="resultUrl"
+                    class="result-value">
+                </div>
+
+            </div>
+
+
+            <div class="result-box">
+
+                <div class="result-label">
+                    Domain
+                </div>
+
+                <div
+                    id="resultDomain"
+                    class="result-value">
+                </div>
+
+            </div>
+
+
+            <div class="result-box">
+
+                <div class="result-label">
+                    Scheme
+                </div>
+
+                <div
+                    id="resultScheme"
+                    class="result-value">
+                </div>
+
+            </div>
+
+
+            <div class="result-box">
+
+                <div class="result-label">
+                    HTTP Status
+                </div>
+
+                <div
+                    id="resultStatus"
+                    class="result-value">
+                </div>
+
+            </div>
+
+
+            <div class="result-box">
+
+                <div class="result-label">
+                    Final URL
+                </div>
+
+                <div
+                    id="resultFinalUrl"
+                    class="result-value">
+                </div>
+
+            </div>
+
+
+            <div class="result-box">
+
+                <div class="result-label">
+                    Content Type
+                </div>
+
+                <div
+                    id="resultContentType"
+                    class="result-value">
+                </div>
+
+            </div>
+
+
+            <div class="result-box">
+
+                <div class="result-label">
+                    Response Time
+                </div>
+
+                <div
+                    id="resultResponseTime"
+                    class="result-value">
+                </div>
+
+            </div>
+
+
+            <div class="result-box">
+
+                <div class="result-label">
+                    Server
+                </div>
+
+                <div
+                    id="resultServer"
+                    class="result-value">
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+async function startSandbox() {
+
+    const url =
+        document.getElementById("urlInput").value.trim();
+
+    const status =
+        document.getElementById("status");
+
+    const browserCard =
+        document.getElementById("browserCard");
+
+    const browserFrame =
+        document.getElementById("browserFrame");
+
+    const sessionInfo =
+        document.getElementById("sessionInfo");
+
+    const resultsCard =
+        document.getElementById("resultsCard");
+
+
+    if (!url) {
+
+        status.innerText =
+            "Please enter a URL.";
+
+        return;
+    }
+
+
+    status.innerText =
+        "Starting sandbox...";
+
+
+    try {
+
+        // =========================================
+        // START SANDBOX
+        // =========================================
+
+        const sessionResponse =
+            await fetch(
+                "/sandbox/session",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        url: url
+                    })
+                }
+            );
+
+
+        const sessionData =
+            await sessionResponse.json();
+
+
+        if (!sessionResponse.ok) {
+
+            status.innerText =
+                sessionData.detail ||
+                "Failed to start sandbox.";
+
+            return;
+        }
+
+
+        status.innerText =
+            "Sandbox started successfully.";
+
+
+        browserCard.classList.remove(
+            "hidden"
+        );
+
+
+        browserFrame.src =
+            "http://localhost:3000/vnc.html";
+
+
+        sessionInfo.innerText =
+            "Session ID: " +
+            sessionData.session_id;
+
+
+        // =========================================
+        // ANALYSIS
+        // =========================================
+
+        status.innerText =
+            "Analyzing URL...";
+
+
+        const analysisResponse =
+            await fetch(
+                "/sandbox/analyze",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        url: url
+                    })
+                }
+            );
+
+
+        const analysisData =
+            await analysisResponse.json();
+
+
+        if (!analysisResponse.ok) {
+
+            status.innerText =
+                analysisData.detail ||
+                "Analysis failed.";
+
+            return;
+        }
+
+
+        // =========================================
+        // SHOW RESULTS
+        // =========================================
+
+        resultsCard.classList.remove(
+            "hidden"
+        );
+
+
+        document.getElementById(
+            "resultUrl"
+        ).innerText =
+            analysisData.url;
+
+
+        document.getElementById(
+            "resultDomain"
+        ).innerText =
+            analysisData.domain;
+
+
+        document.getElementById(
+            "resultScheme"
+        ).innerText =
+            analysisData.scheme;
+
+
+        document.getElementById(
+            "resultStatus"
+        ).innerText =
+            analysisData.status_code;
+
+
+        document.getElementById(
+            "resultFinalUrl"
+        ).innerText =
+            analysisData.final_url;
+
+
+        document.getElementById(
+            "resultContentType"
+        ).innerText =
+            analysisData.content_type;
+
+
+        document.getElementById(
+            "resultResponseTime"
+        ).innerText =
+            analysisData.response_time_ms +
+            " ms";
+
+
+        document.getElementById(
+            "resultServer"
+        ).innerText =
+            analysisData.server;
+
+
+        status.innerText =
+            "Analysis completed successfully.";
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        status.innerText =
+            "Could not connect to Scanova Sandbox API.";
+
+    }
+
+}
+
+</script>
+
+
+</body>
+
+</html>
